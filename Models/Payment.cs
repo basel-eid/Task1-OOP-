@@ -7,16 +7,21 @@ using System.Threading.Tasks;
 
 namespace PMS.Models
 {
-    public abstract class Payment : IValidate
+    public abstract class Payment
     {
-        public double Amount { get;}
-        public DateTime PaymentDate { get;}
+        public double Amount { get; }
+        public DateTime PaymentDate { get; } // Added the date property
+
         public Payment(double amount)
         {
             this.Amount = amount;
+            this.PaymentDate = DateTime.Now; 
         }
-        public abstract void Process();
-        public virtual bool validate() => Amount > 0;
 
+        // New return type: returns a record containing status and message
+        public abstract PaymentResponse Process();
+
+        public virtual bool Validate() => Amount > 0;
     }
+    public record PaymentResponse(bool IsSuccess, string Message);
 }
