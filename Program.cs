@@ -1,5 +1,8 @@
-﻿using PMS.Factories;
+﻿using PMS.Enums;
+using PMS.Factories;
+using PMS.Interfaces;
 using PMS.Models;
+using static PMS.Models.PaymentContracts;
 
 namespace PMS
 {
@@ -9,22 +12,33 @@ namespace PMS
         {
             List<Payment> paymentList = new List<Payment>();
 
-            paymentList.Add(PaymentFactory.CreatePayment("card", 250.00));
-            paymentList.Add(PaymentFactory.CreatePayment("cash", 20.00));
-            paymentList.Add(PaymentFactory.CreatePayment("installment", 1000.00));
+            // Mocking the Factory calls (assuming your Factory returns the Response object)
+            paymentList.Add(PaymentFactory.CreatePayment(new PaymentRequest(PaymentType.Card, 250)).Data);
+            paymentList.Add(PaymentFactory.CreatePayment(new PaymentRequest(PaymentType.Cash, 20)).Data);
+            paymentList.Add(PaymentFactory.CreatePayment(new PaymentRequest(PaymentType.Installment, 1000, 6)).Data);
 
             Console.WriteLine("--- Starting Processing ---");
 
             foreach (Payment p in paymentList)
             {
-                if (p.validate())
+                Models.PaymentResponse response = p.Process();
+                Console.WriteLine(response.Message);
+
+                // 2. Handle Refund (for Card/Cash)
+                if (p is IRefundatable refundable)
                 {
-                    p.Process();
+                    double refundValue = refundable.Refund();
+                    Console.WriteLine($"Refund Processed: ${refundValue}");
                 }
-                else
+
+                // 3. Handle Installment-specific details
+                if (p is InstallmentPayment installment)
                 {
-                    Console.WriteLine("Validation failed for payment.");
+                    Console.WriteLine($"Plan Duration: {installment.Months} months");
                 }
+
+                Console.WriteLine($"Transaction Date: {p.PaymentDate}");
+                Console.WriteLine("---------------------------");
             }
         }
     }
