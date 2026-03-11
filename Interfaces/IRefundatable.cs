@@ -8,6 +8,6 @@ namespace PMS.Interfaces
 {
     internal interface IRefundatable
     {
-        void Refund();
+        double Refund();//return value(money)
     }
 }
